@@ -1,0 +1,46 @@
+from flask import Flask, send_file
+from openpyxl import Workbook
+from reportlab.pdfgen import canvas
+import os
+
+app = Flask(__name__)
+
+EXCEL_FILE = "dados.xlsx"
+PDF_FILE = "dados.pdf"
+
+def criar_excel():
+    wb = Workbook()
+    ws = wb.active
+    ws.append(["Placa", "Tipo", "Empresa"])
+    ws.append(["ABC1234", "Carro", "Empresa X"])
+    wb.save(EXCEL_FILE)
+
+def criar_pdf():
+    c = canvas.Canvas(PDF_FILE)
+    c.drawString(100, 750, "Placa: ABC1234")
+    c.drawString(100, 730, "Tipo: Carro")
+    c.drawString(100, 710, "Empresa: Empresa X")
+    c.save()
+
+@app.route("/")
+def home():
+    criar_excel()
+    criar_pdf()
+    return """
+    <h2>Arquivos criados com sucesso!</h2>
+    <ul>
+        <li><a href="/download/excel">Baixar Excel</a></li>
+        <li><a href="/download/pdf">Baixar PDF</a></li>
+    </ul>
+    """
+
+@app.route("/download/excel")
+def download_excel():
+    return send_file(EXCEL_FILE, as_attachment=True)
+
+@app.route("/download/pdf")
+def download_pdf():
+    return send_file(PDF_FILE, as_attachment=True)
+
+if __name__ == "__main__":
+    app.run()
